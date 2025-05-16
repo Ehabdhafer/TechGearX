@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/Authcontext";
+import { useGoogleLogin } from "@react-oauth/google";
 import API from "../api/axios";
+import axios from "axios";
+
 import ps5Cart from "../assets/ps5 stick Image May 14, 2025, 10_21_50 PM.png";
+
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -14,6 +18,41 @@ export default function Signup() {
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
 
+  const [userGoogle, setUserGoogle] = useState([]);
+
+  const loginbygoogle = useGoogleLogin({
+    onSuccess: (codeResponse) => setUserGoogle(codeResponse),
+    onError: (error) => console.log("Login Failed:", error),
+  });
+
+  useEffect(() => {
+    // console.log("userGoogle:", userGoogle);
+
+    if (userGoogle.access_token) {
+      axios
+        .get(
+          `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${userGoogle.access_token}`
+        )
+        .then(async (res) => {
+          try {
+            const response = await API.post("/google_login", res.data);
+            const token = response.data.access_token;
+
+            // Make sure the token is not undefined or null before storing it
+            if (token) {
+              login(token);
+              navigate("/");
+            }
+
+            // Rest of your code...
+          } catch (error) {
+            console.log("Error:", error);
+          }
+        })
+        .catch((err) => console.log("Google User Info Error:", err.message));
+    }
+  });
+
   const hendleSignUp = async (e) => {
     e.preventDefault();
 
@@ -24,7 +63,7 @@ export default function Signup() {
     } else {
       setError("");
     }
-    
+
     if (!validateEmail(email)) {
       setError("Please enter a valid email.");
       return;
@@ -33,7 +72,9 @@ export default function Signup() {
     }
 
     if (!validatePassword(password)) {
-      setError("Password must be 6–30 characters long and contain only letters, numbers, @ or #.");
+      setError(
+        "Password must be 6–30 characters long and contain only letters, numbers, @ or #."
+      );
       return;
     } else {
       setError("");
@@ -55,9 +96,7 @@ export default function Signup() {
       });
       login(response.data.access_token);
 
-      console.log(response.status);
       if (response.status === 201) {
-        alert("Sign Up successful!");
         navigate("/");
         window.location.reload();
       }
@@ -88,13 +127,13 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex justify-between items-center mt-7">
-      <div>
+    <div className="lg:flex justify-between items-center mt-7">
+      <div className="lg:block hidden">
         <img src={ps5Cart} alt="Left img" className="w-full h-[550px]" />
       </div>
 
-      <div className="flex flex-col justify-center w-1/2 gap-2.5 items-center">
-        <div className="flex flex-col justify-center w-1/2  gap-2.5">
+      <div className="flex flex-col justify-center lg:w-1/2 gap-2.5 items-center">
+        <div className="flex flex-col justify-center sm:w-1/2  gap-2.5">
           <h3>Create an account</h3>
           <p>Enter your details below</p>
           <input
@@ -143,18 +182,18 @@ export default function Signup() {
 
           <button
             className="rounded-md py-2 border border-black "
-            // onClick={hendleGoogleLogin}
+            onClick={() => loginbygoogle()}
           >
             <i className="fab fa-google fa-1x mx-3"></i>
             <span>Signup With Google</span>
           </button>
 
           <p className="text-center text-sm text-gray-500">
-            Already have an account?{" "}
+            Already have an account?
             <Link to={"/login"}>
               <button
-                className="py-1 border-b font-semibold text-gray-600
-              focus:text-gray-800 focus:outline-none"
+                className="py-1 font-semibold text-gray-600
+              focus:text-gray-800 focus:outline-none ml-4"
               >
                 Login
               </button>
