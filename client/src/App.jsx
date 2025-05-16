@@ -13,7 +13,7 @@ function App() {
           <span>English</span>
         </nav>
 
-        <nav className="p-4 border-b-2 flex gap-4">
+        <nav className="p-4 border-b flex gap-4">
           <Link to="/">Home</Link>
           <Link to="/contact">Contact</Link>
           <Link to="/about">About</Link>

@@ -5,16 +5,16 @@ import Cookies from 'js-cookie';
 const AuthContext = createContext();
 
 export const AuthProvider = ({children}) => {
-    const [authToken, setAuthToken] = useState(Cookies.get("token") || null);
+    const [authToken, setAuthToken] = useState(Cookies.get("access_token") || null);
 
     const login = (token) => {
         setAuthToken(token);
-        Cookies.set('token',token);
+        Cookies.set('access_token',token);
     };
 
     const logout = () => {
         setAuthToken(null);
-        Cookies.remove('token');
+        Cookies.remove('access_token');
     };
 
     const isAuthenticated = () => {
